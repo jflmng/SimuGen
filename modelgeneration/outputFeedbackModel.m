@@ -3,13 +3,14 @@ function [] = outputFeedbackModel(S_dot, S, U, IC, K, S_op, sys_est, C, U_op, mo
 % Create a simulink model
 if nargin < 9
     U_op = zeros(size(U));
-    modelName = 'simgen_outputfeedback';   
+    modelName = 'simugen_outputfeedback';   
 elseif nargin < 10
-    modelName = 'simgen_outputfeedback';   
+    modelName = 'simugen_outputfeedback';   
 end
 
 if ~exist(modelName)
     new_system(modelName)
+    open_system(modelName)
 else
     open_system(modelName)
     Simulink.BlockDiagram.deleteContents(modelName)
@@ -107,7 +108,7 @@ set_param(s1, 'Name', 'Controller');
 % Simulink.BlockDiagram.arrangeSystem(modelName)
 
 % Final arrangement
-Simulink.BlockDiagram.arrangeSystem(modelName)
+Simulink.BlockDiagram.arrangeSystem(modelName,FullLayout='true')
 
 end
 

@@ -3,7 +3,7 @@ function [p] = openLoopModel(S_dot, S, U, IC, modelName, MIMO)
 N = length(S);
 
 if nargin < 5
-    modelName = 'simgen_openloop';   
+    modelName = 'simugen_openloop';   
 end
 if nargin < 6
     MIMO = 'SISO';
@@ -12,8 +12,11 @@ end
 % Create/open a simulink model
 if ~exist(modelName)
     new_system(modelName)
+    open_system(modelName)
+    disp('Creating new Simulink model.')
 else
     open_system(modelName)
+    disp('Overwriting Simulink model.')
     Simulink.BlockDiagram.deleteContents(modelName)
 end
 
@@ -63,7 +66,7 @@ set_param(strcat(modelName,'/Initial Conditions'), 'Value', IC);
 p = [p1 p2 p3 p4];
 
 % Rearrange so it looks nice
-Simulink.BlockDiagram.arrangeSystem(modelName)
+Simulink.BlockDiagram.arrangeSystem(modelName,FullLayout='true')
 
 end
 

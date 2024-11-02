@@ -3,13 +3,14 @@ function [] = stateFeedbackModel(S_dot, S, U, IC, K, S_op, U_op, modelName)
 % Create a simulink model
 if nargin < 7
     U_op = zeros(size(U));
-    modelName = 'simgen_statefeedback';   
+    modelName = 'simugen_statefeedback';   
 elseif nargin < 8
-    modelName = 'simgen_statefeedback';   
+    modelName = 'simugen_statefeedback';   
 end
 
 if ~exist(modelName)
     new_system(modelName)
+    open_system(modelName)
 else
     open_system(modelName)
     Simulink.BlockDiagram.deleteContents(modelName)
@@ -68,7 +69,7 @@ Simulink.BlockDiagram.createSubsystem(p);
 s2 = gcbh;
 set_param(s2, 'Name', 'Plant');
 
-Simulink.BlockDiagram.arrangeSystem(modelName)
+Simulink.BlockDiagram.arrangeSystem(modelName, FullLayout='true')
 
 end
 
