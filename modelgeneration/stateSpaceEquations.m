@@ -9,6 +9,8 @@ function [EOM_rhs, S] = stateSpaceEquations(EOM, X)
 
 N = length(X);
 
+disp('Reformulating equations to nonlinear state-space form, this may take a while!')
+
 % % Decouple the equations first, in case second derivatives are in several
 if N > 1
     parts = children(EOM);
