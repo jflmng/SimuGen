@@ -44,40 +44,81 @@ for k = 1:N
 end
 
 % Rearrange the resulting equations to have X_dot alone on LHS
-kids = children(EOM);
-if N > 1
-    for k = 1:N
-        eq{k} = isolate(kids{k}{1} == kids{k}{2}, diff(X_dot{k},t));
+% NB: if equations are all first order, don't need to!
+str = string(lhs(EOM));
+if any(contains(str,"diff"))    % second order equations
+    kids = children(EOM);
+    if N > 1
+        for k = 1:N
+            eq{k} = isolate(kids{k}{1} == kids{k}{2}, diff(X_dot{k},t));
+        end
+    else
+        eq{1} = isolate(kids{1} == kids{2}, diff(X_dot{1},t));
     end
-else
-    eq{1} = isolate(kids{1} == kids{2}, diff(X_dot{1},t));
+    
+    % Assemble the nonlinear state space representation
+    EOM_SS = []; XX = {};
+    for k = 1:N
+        EOM_SS = [EOM_SS; diff(X{k},t) == X_dot{k}; eq{k}];
+        XX = {XX{:}, X{k}, X_dot{k}};
+    end
+
+    % Strip the '(t)'s and convert symfuns to symvars
+    for k = 1:2*N
+        varName = char(XX{k});
+        SS{k} = sym(strcat(upper(varName(1)), varName(2:end-3)));
+    end
+    
+    % Sub vars into statespace equations and return RHS
+    EOM_rhs = subs(rhs(EOM_SS), XX, SS);
+    
+    % Convert cell array of states to column vector
+    syms S [2*N 1]
+    for k = 1:2*N
+        S(k) = SS{k};
+    end
+
+    % The following is a hack to remove '(t)' and change symfuns to sym
+    % EOM_rhs = str2sym(char(EOM_rhs));
+    EOM_rhs = EOM_rhs(t);       % Is this faster for large expressions?
+
+else   % first order equations
+
+    kids = children(EOM);
+    if N > 1
+        for k = 1:N
+            eq{k} = isolate(kids{k}{1} == kids{k}{2}, X_dot{k});
+        end
+    else
+        eq{1} = isolate(kids{1} == kids{2}, X_dot{1});
+    end
+    
+    % Assemble the nonlinear state space representation
+    EOM_SS = []; XX = {};
+    for k = 1:N
+        EOM_SS = [EOM_SS; eq{k}];
+        XX = {XX{:}, X{k}};
+    end
+
+    % EOM_SS = EOM;
+    % XX = X;
+
+    % Strip the '(t)'s and convert symfuns to symvars
+    for k = 1:N
+        varName = char(XX{k});
+        SS{k} = sym(strcat(upper(varName(1)), varName(2:end-3)));
+    end
+
+    % Sub vars into statespace equations and return RHS
+    EOM_rhs = subs(rhs(EOM_SS), XX, SS);
+    
+    % Convert cell array of states to column vector
+    syms S [N 1]
+    for k = 1:N
+        S(k) = SS{k};
+    end
 end
 
-% Assemble the nonlinear state space representation
-EOM_SS = []; XX = {};
-for k = 1:N
-    EOM_SS = [EOM_SS; diff(X{k},t) == X_dot{k}; eq{k}];
-    XX = {XX{:}, X{k}, X_dot{k}};
-end
-
-% Strip the '(t)'s and convert symfuns to symvars
-for k = 1:2*N
-    varName = char(XX{k});
-    SS{k} = sym(strcat(upper(varName(1)), varName(2:end-3)));
-end
-
-% Sub vars into statespace equations and return RHS
-EOM_rhs = subs(rhs(EOM_SS), XX, SS);
-
-% Convert cell array of states to column vector
-syms S [2*N 1]
-for k = 1:2*N
-    S(k) = SS{k};
-end
-
-% The following is a hack to remove '(t)' and change symfuns to sym
-% EOM_rhs = str2sym(char(EOM_rhs));
-EOM_rhs = EOM_rhs(t);       % Is this faster for large expressions?
 EOM_rhs = simplify(EOM_rhs);
 
 end
