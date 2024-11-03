@@ -1,6 +1,7 @@
 function [p] = openLoopModel(S_dot, S, U, IC, modelName, MIMO)
 
 N = length(S);
+open_model = true;
 
 if nargin < 5
     modelName = 'simugen_openloop';   
@@ -8,14 +9,17 @@ end
 if nargin < 6
     MIMO = 'SISO';
 end
+if nargout >= 1
+    open_model = false;
+end
 
 % Create/open a simulink model
 if ~exist(modelName)
     new_system(modelName)
-    open_system(modelName)
+    % open_system(modelName)
     disp('Creating new Simulink model.')
 else
-    open_system(modelName)
+    % open_system(modelName)
     disp('Overwriting Simulink model.')
     Simulink.BlockDiagram.deleteContents(modelName)
 end
@@ -65,8 +69,13 @@ set_param(strcat(modelName,'/Initial Conditions'), 'Value', IC);
 % set_param(s1, 'Name', 'Plant');
 p = [p1 p2 p3 p4];
 
-% Rearrange so it looks nice
+% Rearrange so it looks nice and open the system
 Simulink.BlockDiagram.arrangeSystem(modelName,FullLayout='true')
+
+% If we did not call with an output argument, open system
+if open_model
+    open_system(modelName)
+end
 
 end
 

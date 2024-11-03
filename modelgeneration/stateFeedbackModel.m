@@ -10,9 +10,9 @@ end
 
 if ~exist(modelName)
     new_system(modelName)
-    open_system(modelName)
+    % open_system(modelName)
 else
-    open_system(modelName)
+    % open_system(modelName)
     Simulink.BlockDiagram.deleteContents(modelName)
 end
     
@@ -69,7 +69,9 @@ Simulink.BlockDiagram.createSubsystem(p);
 s2 = gcbh;
 set_param(s2, 'Name', 'Plant');
 
+% Arrange and open the final system
 Simulink.BlockDiagram.arrangeSystem(modelName, FullLayout='true')
+open_system(modelName)
 
 end
 
